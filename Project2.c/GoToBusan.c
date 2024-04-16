@@ -3,75 +3,10 @@
 #include <time.h>
 #include <Windows.h>
 
-#define LEN_MIN 10 // 기차 길이
-#define LEN_MAX 50
-#define PROB_MIN 20 // 확률
+#define LEN_MIN 15 // 기차 길이
+#define LEN_MAX 16
+#define PROB_MIN 10 // 확률
 #define PROB_MAX 90
-
-// 함수 정의
-void trainState(int len, int citizen, int zombie);
-int citizenMove(int p);
-int zombieMove(int p, int turn);
-void citzomState(int turn, int citizen, int zombie, int citMove, int zomMove);
-
-int main(void) {
-	srand((unsigned int)time(NULL)); // 프로그램을 실행할 때마다 다른 수열을 만들기
-	int trainLength = rand() % (LEN_MAX-LEN_MIN+1)+LEN_MIN;// 랜덤한 기차의 길이를 변수에 담기
-	int p = rand() % (PROB_MAX - PROB_MIN + 1) + PROB_MIN;	// 랜덤한 확률을 변수에 담기
-	int citizenState = trainLength - 5; // 시민의 초기상태 선언
-	int zombieState = trainLength - 3; // 좀비의 초기상태 선언
-	int citMove = 0; // 시민 이동여부 (0, 1) 저장 변수
-	int zomMove = 0; // 좀비 이동여부 (0, 2) 저장 변수
-	int count = 0; // 턴 수를 세기 위한 변수
-
-	// 인트로 (미구현)
-
-	// 열차 초기 상태 출력
-	trainState(trainLength, citizenState, zombieState);
-	printf("\n\n\n");
-	
-	while (1) {
-		count++;
-
-		// 시민 이동
-		citMove = citizenMove(p);
-		citizenState -= citMove;
-
-		// 좀비 이동
-		zomMove = zombieMove(p, count);
-		zombieState -= zomMove;
-
-		// 열차 상태 출력
-		trainState(trainLength, citizenState, zombieState);
-
-		// 시민, 좀비 상태
-		citzomState(count,citizenState, zombieState, citMove, zomMove);
-
-		// 종료조건 검사
-		// 시민이 좀비에게 붙잡혔을 때 (시민상태 == 좀비상태일 때) [구출 실패]
-		if (citizenState == zombieState) {
-			break;
-		}
-		// 시민이 왼쪽 끝(1번)에 도달했을 때 [구출 성공]
-		else{
-			break;
-		}
-		Sleep(2000);
-	}
-
-	// 상황에 맞는 메세지 출력
-	if (citizenState == zombieState) {
-		printf("GAME OVER\n");
-		printf("Citizen(s) has(have) been attacked by a Zombie\n");
-	}
-	
-	else if (citizenState == 1) {
-		printf("SUCCESS!\n");
-		printf("citizen(s) escaped to the next train");
-	}
-
-	return 0;
-}
 
 
 /*	각 턴 마다의 열차의 상태를 출력하는 함수 
@@ -162,4 +97,111 @@ void citzomState(int turn, int citizen, int zombie, int citMove, int zomMove) {
 			printf("zombie: stay %d\n\n", zombie);
 	}
 	}
+}
+
+int main(void) {
+	int len = 0;
+	int prob = 0;
+	// 인트로
+	printf(" _____  _____   _____  _____  ______  _   _  _____   ___   _   _ \n");
+	printf("|  __ \\|  _  | |_   _||  _  | | ___ \\| | | |/  ___| / _ \\ | \\ | |\n");
+	printf("| |  \\/| | | |   | |  | | | | | |_/ /| | | |\\ `--. / /_\\ \\|  \\| |\n");
+	printf("| | __ | | | |   | |  | | | | | ___ \\| | | | `--. \\|  _  || . ` |\n");
+	printf("| |_\\ \\\\ \\_/ /   | |  \\ \\_/ / | |_/ /| |_| |/\\__/ /| | | || |\\  |\n");
+	printf(" \\____/ \\___/    \\_/   \\___/  \\____/  \\___/ \\____/ \\_| |_/\\_| \\_/\n");
+	printf("\n");
+	Sleep(3000);
+	system("cls");
+	// 열차의 길이와 확률 p를 입력받음
+	printf("train length(15~50) >> ");
+	scanf_s("%d", &len);
+	printf("percentile probability 'p' (10~90) >> ");
+	scanf_s("%d", &prob);
+	if (len < LEN_MIN || len > LEN_MAX) {
+		exit(1);
+	}
+
+	if (prob < PROB_MIN || prob > PROB_MAX) {
+		exit(1);
+	}
+	system("cls");
+	
+
+	srand((unsigned int)time(NULL)); // 프로그램을 실행할 때마다 다른 수열을 만들기
+	int trainLength = rand() % (LEN_MAX - len + 1) + len;// 랜덤한 기차의 길이를 변수에 담기
+	int p = rand() % (PROB_MAX - prob + 1) + prob;	// 랜덤한 확률을 변수에 담기
+	int citizenState = trainLength - 5; // 시민의 초기상태 선언
+	int zombieState = trainLength - 3; // 좀비의 초기상태 선언
+	int citMove = 0; // 시민 이동여부 (0, 1) 저장 변수
+	int zomMove = 0; // 좀비 이동여부 (0, 2) 저장 변수
+	int count = 0; // 턴 수를 세기 위한 변수
+
+	
+
+	// 열차 초기 상태 출력
+	trainState(trainLength, citizenState, zombieState);
+	printf("\n\n\n");
+
+	while (1) {
+		count++;
+
+		// 시민 이동
+		citMove = citizenMove(p);
+		citizenState -= citMove;
+
+		// 좀비 이동
+		zomMove = zombieMove(p, count);
+		zombieState -= zomMove;
+
+		// 열차 상태 출력
+		trainState(trainLength, citizenState, zombieState);
+
+		// 시민, 좀비 상태
+		citzomState(count, citizenState, zombieState, citMove, zomMove);
+
+		// 종료조건 검사
+		// 시민이 좀비에게 붙잡혔을 때 (시민상태 == 좀비상태일 때) [구출 실패]
+		if (citizenState == zombieState) {
+			break;
+		}
+		// 시민이 왼쪽 끝(1번)에 도달했을 때 [구출 성공]
+		else if (citizenState == 1) {
+			break;
+		}
+		Sleep(1000);
+	}
+
+	// 상황에 맞는 메세지 출력
+	if (citizenState == zombieState) {
+		printf("GAME OVER\n");
+		printf("Citizen(s) has(have) been attacked by a Zombie\n");
+		Sleep(3000);
+	}
+
+	else if (citizenState == 1) {
+		printf("SUCCESS!\n");
+		printf("citizen(s) escaped to the next train");
+		Sleep(3000);
+	}
+	
+	system("cls");
+	// 아웃트로
+	printf(" _____  _____   _____  _____  ______  _   _  _____   ___   _   _ \n");
+	printf("|  __ \\|  _  | |_   _||  _  | | ___ \\| | | |/  ___| / _ \\ | \\ | |\n");
+	printf("| |  \\/| | | |   | |  | | | | | |_/ /| | | |\\ `--. / /_\\ \\|  \\| |\n");
+	printf("| | __ | | | |   | |  | | | | | ___ \\| | | | `--. \\|  _  || . ` |\n");
+	printf("| |_\\ \\\\ \\_/ /   | |  \\ \\_/ / | |_/ /| |_| |/\\__/ /| | | || |\\  |\n");
+	printf(" \\____/ \\___/    \\_/   \\___/  \\____/  \\___/ \\____/ \\_| |_/\\_| \\_/\n");
+	printf("\n\n");
+
+	printf(" _____  _   _   ___   _   _  _   __ __   __ _____  _   _   _ \n");
+	printf("|_   _|| | | | / _ \\ | \\ | || | / / \\ \\ / /|  _  || | | | | |\n");
+	printf("  | |  | |_| |/ /_\\ \\|  \\| || |/ /   \\ V / | | | || | | | | |\n");
+	printf("  | |  |  _  ||  _  || . ` ||    \\    \\ /  | | | || | | | | |\n");
+	printf("  | |  | | | || | | || |\\  || |\\  \\   | |  \\ \\_/ /| |_| | |_|\n");
+	printf("  \\_/  \\_| |_/\\_| |_/\\_| \\_/\\_| \\_/   \\_/   \\___/  \\___/  (_)\n");
+	printf("\n");
+
+	Sleep(3000);
+	return 0;
 }
