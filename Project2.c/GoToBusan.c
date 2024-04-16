@@ -4,7 +4,7 @@
 #include <Windows.h>
 
 #define LEN_MIN 15 // 기차 길이
-#define LEN_MAX 16
+#define LEN_MAX 50
 #define PROB_MIN 10 // 확률
 #define PROB_MAX 90
 
@@ -113,9 +113,9 @@ int main(void) {
 	Sleep(3000);
 	system("cls");
 	// 열차의 길이와 확률 p를 입력받음
-	printf("train length(15~50) >> ");
+	printf("train length(%d~%d) >> ",LEN_MIN,LEN_MAX);
 	scanf_s("%d", &len);
-	printf("percentile probability 'p' (10~90) >> ");
+	printf("percentile probability 'p' (%d~%d) >> ",PROB_MIN, PROB_MAX);
 	scanf_s("%d", &prob);
 	if (len < LEN_MIN || len > LEN_MAX) {
 		exit(1);
@@ -168,20 +168,20 @@ int main(void) {
 		else if (citizenState == 1) {
 			break;
 		}
-		Sleep(1000);
+		Sleep(4000);
 	}
 
 	// 상황에 맞는 메세지 출력
 	if (citizenState == zombieState) {
 		printf("GAME OVER\n");
 		printf("Citizen(s) has(have) been attacked by a Zombie\n");
-		Sleep(3000);
+		Sleep(2000);
 	}
 
 	else if (citizenState == 1) {
 		printf("SUCCESS!\n");
 		printf("citizen(s) escaped to the next train");
-		Sleep(3000);
+		Sleep(2000);
 	}
 	
 	system("cls");
@@ -202,6 +202,6 @@ int main(void) {
 	printf("  \\_/  \\_| |_/\\_| |_/\\_| \\_/\\_| \\_/   \\_/   \\___/  \\___/  (_)\n");
 	printf("\n");
 
-	Sleep(3000);
+	Sleep(2000);
 	return 0;
 }
