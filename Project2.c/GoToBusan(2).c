@@ -71,9 +71,31 @@ void citzenState(int citizenPosition, int citizenMove, int citizenAggro) {
 
 
 /* ------------- 좀비의 상태를 출력하는 함수 -------------- */
-void zombieState(int zombiePosition, int zombieMove, int turn) {
+void zombieState(int citizenPosition, int zombiePosition, int madongPosition, int zombieMove, int turn, int citizenAggro, int madongAggro) {
 	if (zombieMove == 1) {
-		printf("zombie: %d -> %d\n\n", zombiePosition + 1, zombiePosition);
+
+		// 시민이 마동석보다 어그로가 높거나 같을 때 
+		if (citizenAggro >= madongAggro) { // 시민쪽으로 이동
+
+			// 시민이 좀비와 인접해있을 때 이동 불가
+			if (citizenPosition + 1 != zombiePosition) {
+				printf("zombie: %d -> %d\n\n", zombiePosition + 1, zombiePosition);
+			}
+			else {
+				printf("zombie: 시민 인접해서 이동불가 %d\n\n", zombiePosition);
+			}
+		}
+		// 마동석이 시민보다 어그로가 높을 때
+		else if (citizenAggro < madongAggro) { // 마동석쪽으로 이동
+
+			// 마동석이 좀비와 인접해있을 때 이동 불가
+			if (madongPosition - 1 != zombiePosition) {
+				printf("zombie: %d -> %d\n\n", zombiePosition+1, zombiePosition);
+			}
+			else {
+				printf("zombie: 마동석 인접해서 이동불가 %d\n\n", zombiePosition);
+			}
+		}
 	}
 	else {
 		if (turn % 2 == 0) {
@@ -122,6 +144,7 @@ int isZombieMove(int p, int turn) {
 			return 0; // (100-p)% 확률로 이동하지 않음
 		}
 	}
+
 	else {
 		return 0; // 짝수 turn에선 움직이지 않기
 	}
@@ -238,7 +261,7 @@ int main() {
 
 		// 시민, 좀비 상태
 		citzenState(citizenPosition, citizenMove, citizenAggro);
-		zombieState(zombiePosition, zombieMove, turn);
+		zombieState(citizenPosition, zombiePosition, madongPosition, zombieMove, turn, citizenAggro, madongAggro);
 
 		// 마동석 이동 여부 입력대기
 		madongMove = isMadongMove(madongPosition, zombiePosition);
