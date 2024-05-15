@@ -175,6 +175,17 @@ int isMadongMove(int madongPosition, int zombiePosition) {
 	}
 }
 
+int isMadongPull(int p) {
+	int result = rand() % 100 + 1;
+
+	if (result <= p) {
+		return 0; // p% 확률로 실패
+	}
+	else {
+		return 1; // (100-p)% 확률로 성공
+	}
+}
+
 
 
 
@@ -212,9 +223,14 @@ int main() {
 	int madongMove; // 마동석 이동여부 (0, 1)
 	int turn = 0; // 턴 수
 	int stay = 0;
-
 	int citizenAggro = 1, madongAggro = 1;
+
+	int zombieAttack = ATK_NONE;
+	int madongAction;
+	int madongPull = 0;
+	
 	trainState(trainLength, citizenPosition, zombiePosition, madongPosition);
+
 	while (1) {
 		turn++;
 
@@ -297,8 +313,6 @@ int main() {
 
 		/* --------------------- 행동 -------------------------*/
 
-		int zombieAttack = ATK_NONE;
-
 		// 시민의 행동 출력
 		printf("\n");
 		if (citizenPosition == 1) {
@@ -332,13 +346,57 @@ int main() {
 		}
 		else if (madongPosition - 1 == zombiePosition) {
 			stm--;
-			printf("zombie attacked madongseok(madongseok stamina: %d -> %d)\n", stm + 1, stm);
+			if (stm == STM_MIN) {
+				printf("GAME OVER madongseok dead...\n");
+				break;
+			}
+			else {
+				printf("zombie attacked madongseok(madongseok stamina: %d -> %d)\n", stm + 1, stm);
+			}
 		}
 		else {
 			printf("zombie attacked nobody.\n");
 		}
 
 		// 마동석의 행동
+		if (madongPosition - 1 == zombiePosition) {
+			do {
+				printf("madongseok move(%d:stay, %d:provoke, %d:pull)>> ", ACTION_REST, ACTION_PROVOKE, ACTION_PULL);
+				scanf_s("%d", &madongAction);
+			} while (madongAction != ACTION_REST && madongAction != ACTION_PROVOKE && madongAction != ACTION_PULL);
+
+		}
+		else {
+			do {
+				printf("madongseok move(%d:stay, %d:provoke)>> ", ACTION_REST, ACTION_PROVOKE);
+				scanf_s("%d", &madongAction);
+			} while (madongAction != ACTION_REST && madongAction != ACTION_PROVOKE);
+		}
+		printf("\n");
+
+		if (madongAction == ACTION_REST) {
+			madongAggro -= 1;
+			stm += 1;
+			printf("madongseok rests...\n");
+			printf("madongseok: %d (aggro: %d, stamina: %d -> %d)\n", madongPosition, madongAggro, stm - 1, stm);
+		}
+		else if (madongAction == ACTION_PROVOKE) {
+			madongAggro = AGGRO_MAX;
+			printf("madongseok provoked zombie...\n");
+			printf("madongseok: %d (aggro: %d, stamina: %d)\n", madongPosition, madongAggro, stm);
+		}
+		else {
+			madongAggro += 2;
+			stm--;
+			madongPull = isMadongPull(p);
+			if (madongPull == 0) { // 실패
+				printf("madongseok failed to pull zombie\n");
+				printf("madongseok: %d (aggro: %d, stamina: %d -> %d)\n", madongPosition, madongAggro, stm+1, stm);
+			}
+			else {
+				printf("madongseok pulled zombie... Next turn, it can't move");
+			}
+		}
 	}
 	
 
