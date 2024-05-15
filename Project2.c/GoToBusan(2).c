@@ -62,10 +62,10 @@ void trainState(int trainLength, int citizenPosition, int zombiePosition, int ma
 /* ------------- 시민의 상태를 출력하는 함수 -------------- */
 void citzenState(int citizenPosition, int citizenMove, int citizenAggro) {
 	if (citizenMove == 1) {
-		printf("citizen: %d -> %d (aggro: %d -> %d)\n", citizenPosition + 1, citizenPosition, citizenAggro-1, citizenAggro);
+		printf("citizen: %d -> %d (aggro: %d)\n", citizenPosition + 1, citizenPosition, citizenAggro);
 	}
 	else {
-		printf("citizen: stay %d (aggro: %d -> %d)\n", citizenPosition, citizenAggro+1, citizenAggro);
+		printf("citizen: stay %d (aggro: %d)\n", citizenPosition, citizenAggro);
 	}
 }
 
@@ -109,10 +109,10 @@ void zombieState(int citizenPosition, int zombiePosition, int madongPosition, in
 /* ------------- 마동석의 상태를 출력하는 함수 -------------- */
 void madongState(int madongPosition, int madongMove, int stm, int madongAggro) {
 	if (madongMove == 1) {
-		printf("madongseok: left(aggro: %d -> %d, stamina: %d)\n", madongAggro - 1, madongAggro, stm);
+		printf("madongseok: left(aggro: %d, stamina: %d)\n\n", madongAggro, stm);
 	}
 	else {
-		printf("madongseok: stay %d(aggro: %d -> %d, stamina: %d)\n", madongPosition, madongAggro + 1, madongAggro, stm);
+		printf("madongseok: stay %d(aggro: %d, stamina: %d)\n\n", madongPosition, madongAggro, stm);
 	}
 	
 }
@@ -218,6 +218,7 @@ int main() {
 	while (1) {
 		turn++;
 
+		/* --------------------- 이동 -------------------------*/
 		// 시민 이동 + 어그로 예외처리 추가
 		citizenMove = isCitizenMove(p);
 
@@ -293,6 +294,51 @@ int main() {
 
 		// 마동석 상태
 		madongState(madongPosition, madongMove, stm, madongAggro);
+
+		/* --------------------- 행동 -------------------------*/
+
+		int zombieAttack = ATK_NONE;
+
+		// 시민의 행동 출력
+		printf("\n");
+		if (citizenPosition == 1) {
+			printf("YOU WIN!\n");
+			break;
+		}
+		else {
+			printf("citizen does nothing.\n");
+		}
+
+		// 좀비의 행동 출력
+		if (citizenPosition + 1 == zombiePosition && madongPosition - 1 == zombiePosition) {
+			if (citizenAggro <= madongAggro) {
+				stm--;
+				if (stm == STM_MIN) {
+					printf("GAME OVER madongseok dead...\n");
+					break;
+				}
+				else {
+					printf("zombie attacked madongseok(aggro: %d vs %d, madongseok stamina: %d -> %d)\n", citizenAggro, madongAggro, stm + 1, stm);
+				}
+			}
+			else if (citizenAggro > madongAggro) {
+				printf("GAME OVER citizen dead...\n");
+				break;
+			}
+		}
+		else if (citizenPosition + 1 == zombiePosition) {
+			printf("GAME OVER citizen dead...\n");
+			break;
+		}
+		else if (madongPosition - 1 == zombiePosition) {
+			stm--;
+			printf("zombie attacked madongseok(madongseok stamina: %d -> %d)\n", stm + 1, stm);
+		}
+		else {
+			printf("zombie attacked nobody.\n");
+		}
+
+		// 마동석의 행동
 	}
 	
 
