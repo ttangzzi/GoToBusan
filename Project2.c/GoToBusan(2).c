@@ -60,12 +60,22 @@ void trainState(int trainLength, int citizenPosition, int zombiePosition, int ma
 
 
 /* ------------- 시민의 상태를 출력하는 함수 -------------- */
-void citzenState(int citizenPosition, int citizenMove, int citizenAggro) {
+void citzenState(int citizenPosition, int citizenMove, int citizenAggro, int priorAggro) {
 	if (citizenMove == 1) {
-		printf("citizen: %d -> %d (aggro: %d)\n", citizenPosition + 1, citizenPosition, citizenAggro);
+		if (citizenAggro == priorAggro) {
+			printf("citizen: %d -> %d (aggro: %d)\n", citizenPosition + 1, citizenPosition, citizenAggro);
+		}
+		else {
+			printf("citizen: %d -> %d (aggro: %d -> %d)\n", citizenPosition + 1, citizenPosition, priorAggro, citizenAggro);
+		}
 	}
 	else {
-		printf("citizen: stay %d (aggro: %d)\n", citizenPosition, citizenAggro);
+		if (citizenAggro == priorAggro) {
+			printf("citizen: stay %d (aggro: %d)\n", citizenPosition, citizenAggro);
+		}
+		else {
+			printf("citizen: stay %d (aggro: %d -> %d)\n", citizenPosition, priorAggro, citizenAggro);
+		}
 	}
 }
 
@@ -132,21 +142,33 @@ int isCitizenMove(int p) {
 
 
 /* ---- 확률 p와 턴 수에 따른 좀비 이동여부 함수 ---- */
-int isZombieMove(int p, int turn) {
+int isZombieMove(int p, int turn, int madongPull, int citizenAggro, int madongAggro) {
 	int result = rand() % 100 + 1;
+	int move;
 
 	if (turn % 2 == 1) {
 		if (result <= p) {
-			return 1; // p% 확률로 이동
+			if (citizenAggro >= madongAggro) {
+				move = 1;
+			}
+			else {
+				move = -1;
+			}
 		}
 		else {
-			return 0; // (100-p)% 확률로 이동하지 않음
+			move = 0; // (100-p)% 확률로 이동하지 않음
+		}
+
+		if (madongPull == 1) {
+			move = 0;
 		}
 	}
-
 	else {
-		return 0; // 짝수 turn에선 움직이지 않기
+		move = 0; // 짝수 turn에선 움직이지 않기
 	}
+
+
+	return move;
 }
 
 
@@ -195,7 +217,7 @@ int main() {
 	srand((unsigned int)time(NULL)); // 프로그램을 실행할 때마다 다른 수열을 만들기
 
 	// 입력
-	int trainLength = 0, stm = 0, prob = 0;
+	int trainLength, stm, prob;
 
 	do {
 		printf("train length(%d~%d) >> ", LEN_MIN, LEN_MAX);
@@ -224,11 +246,13 @@ int main() {
 	int turn = 0; // 턴 수
 	int stay = 0;
 	int citizenAggro = 1, madongAggro = 1;
+	int priorAggro;
 
 	int zombieAttack = ATK_NONE;
 	int madongAction;
 	int madongPull = 0;
 	
+	// 초기 열차상태 출력
 	trainState(trainLength, citizenPosition, zombiePosition, madongPosition);
 
 	while (1) {
@@ -236,14 +260,14 @@ int main() {
 
 		/* --------------------- 이동 -------------------------*/
 		// 시민 이동 + 어그로 예외처리 추가
-		citizenMove = isCitizenMove(p);
+		citizenMove = isCitizenMove(p); // [대기: 0 , 이동: 1]
+		citizenPosition -= citizenMove;
+		priorAggro = citizenAggro;
 
+		// 시민 이동 -> 시민 어그로 증가, 시민 대기 -> 시민 어그로 감소
 		if (citizenMove == 1) {
-			citizenPosition -= citizenMove;
 			citizenAggro++;
-
 			if (citizenAggro > AGGRO_MAX) citizenAggro = AGGRO_MAX;
-
 		}
 		else {
 			citizenAggro--;
@@ -251,32 +275,17 @@ int main() {
 		}
 
 		// 좀비 이동
-		zombieMove = isZombieMove(p, turn);
+		zombieMove = isZombieMove(p,turn, madongPull, citizenAggro, madongAggro);
+		// [대기: 0 , 시민쪽 이동: 1, 마동석쪽 이동: -1]
 
-		if (zombieMove == 1) {
-			// 시민이 마동석보다 어그로가 높거나 같을 때 
-			if (citizenAggro >= madongAggro) { // 시민쪽으로 이동
-
-				// 시민이 좀비와 인접해있을 때 이동 불가
-				if (citizenPosition + 1 != zombiePosition) {
-					zombiePosition -= zombieMove;
-					stay = 1;
-				}
-				else {
-					stay = 0;
-				}
+		if (zombieMove == 1) { // 시민 이동
+			if (citizenPosition + 1 != zombiePosition) { // 인접할 때 제외하고 이동
+				zombiePosition -= zombieMove;
 			}
-			// 마동석이 시민보다 어그로가 높을 때
-			else if (citizenAggro < madongAggro) { // 마동석쪽으로 이동
-
-				// 마동석이 좀비와 인접해있을 때 이동 불가
-				if (madongPosition - 1 != zombiePosition) {
-					zombiePosition += zombieMove;
-					stay = 1;
-				}
-				else {
-					stay = 0;
-				}
+		}
+		else if (zombieMove == -1) { // 마동석쪽 이동
+			if (madongPosition - 1 != zombiePosition) { // 인접할 때 제외하고 이동
+				zombiePosition -= zombieMove;
 			}
 		}
 
@@ -285,7 +294,7 @@ int main() {
 		trainState(trainLength, citizenPosition, zombiePosition, madongPosition);
 
 		// 시민, 좀비 상태
-		citzenState(citizenPosition, citizenMove, citizenAggro);
+		citzenState(citizenPosition, citizenMove, citizenAggro, priorAggro);
 		zombieState(citizenPosition, zombiePosition, madongPosition,citizenMove, zombieMove, turn, citizenAggro, madongAggro,stay);
 
 		// 마동석 이동 여부 입력대기
