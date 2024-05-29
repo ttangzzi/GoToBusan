@@ -26,16 +26,8 @@
 #define ACTION_PROVOKE 1
 #define ACTION_PULL 2
 
-
-
-
-
-
-
-
-
-
-
+/* 2-1 정리 : 부산헹(1) 코드를 함수로 정리 */
+/* 2-2 부산헹(1)에서 수정 */
 
 /* ------------ 열차의 상태를 출력하는 함수 ------------ */
 void trainState(int trainLength, int citizenPosition, int zombiePosition, int madongPosition) {
@@ -259,7 +251,10 @@ int main() {
 	while (1) {
 		turn++;
 
-		/* ----------------------------------------------------------------- 이동 -------------------------*/
+		/* 2-2 : 2 Phases */
+
+		/* 2-3 : 이동 */
+
 		// 시민 이동
 		citizenMove = isCitizenMove(p); // [대기: 0 , 이동: 1]
 		citizenPosition -= citizenMove;
@@ -323,27 +318,7 @@ int main() {
 		madongState(madongPosition, madongMove, stm, madongAggro, mPriorAggro);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		/* ---------------------------------------------------------------------- 행동 -------------------------*/
+		/* 2-4 : 행동 */
 
 		// 시민의 행동 출력
 		printf("\n");
@@ -359,7 +334,7 @@ int main() {
 		if (citizenPosition + 1 == zombiePosition && madongPosition - 1 == zombiePosition) {
 			if (citizenAggro <= madongAggro) {
 				stm--;
-				if (stm == STM_MIN) {
+				if (stm <= STM_MIN) {
 					printf("GAME OVER madongseok dead...\n");
 					break;
 				}
@@ -378,7 +353,7 @@ int main() {
 		}
 		else if (madongPosition - 1 == zombiePosition) {
 			stm--;
-			if (stm == STM_MIN) {
+			if (stm <= STM_MIN) {
 				printf("GAME OVER madongseok dead...\n");
 				break;
 			}
